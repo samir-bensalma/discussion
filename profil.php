@@ -1,18 +1,27 @@
 
 
-Preremplir le login
+<?php
 
-Si nouveau login entré
-    Vérifie pas vide
-        Vérifie qu'il n'existe pas dans la base
-            Si ok on envoie dans la base
+session_start();
+require_once('config.php');
+require_once('function.php');
+require_once('header footer.php');
 
 
-    Vérifier que les champs password soient remplit
-        Vérifier ancien mot de passe avec password verify
-            Vérifie que les deux nouveaux mot de passe correspondent
-                Crypte
-                    Envoi dans la base de données
+var_dump($_SESSION['login']);
+var_dump($_SESSION['id']);
 
-                Renvoi vers Accueil
+if (isset($_POST['submit'])) {
+    profil($_POST['login'], $_POST['password'], $_POST['cpassword'], $db);
+}
 
+?>
+<html>
+<form action="" method="POST" id=form_inscription>
+    <div><label for="login">Login actuel</label> <input type="text" name="login" placeholder=<?php echo $_SESSION['login'] ?> size="20" id="login"></div>
+    <div><label for="login">Nouveau login</label> <input type="text" name="login" placeholder="Entrez votre login" size="20" id="login"></div>
+    <div><label for="password">Mot de passe </label> <input type="password" name="password" placeholder="Entrez votre mot de passe" id="pass"> </div>
+    <div><label for="password">Confirmez le mot de passe </label><input type="password" name="cpassword" placeholder="Entrez votre mot de passe" id="pass"></div>
+    <div><input type="submit" name="submit" value="envoyer" id="submit"></div>
+</form>
+</html>

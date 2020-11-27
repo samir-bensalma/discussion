@@ -1,11 +1,24 @@
 
-Si rien dans login et password => Merci de remplir les champs
-    Champs login et password complétés
-        Vérifie pas vide
-            Vérifie login existe
-                Vérifie que le mot de passe correspond avec password verify
+<?php
 
-                Si ok création variable de session login et id
+session_start();
+require_once('config.php');
+require_once('function.php');
+
+if (isset($_POST['submit'])) {
+    connexion($_POST['login'], $_POST['password']);
+}
+
+
+?>
+<html>
+<form action="" method="POST" id=form_inscription>
+    <div><label for="login">Login</label> <input type="text" name="login" placeholder="Entrez votre login" size="20" id="login"></div>
+    <div><label for="password">Mot de passe </label> <input type="password" name="password" placeholder="Entrez votre mot de passe" id="pass"> </div>
+    <div><input type="submit" name="submit" value="envoyer" id="submit"></div>
+</form>
+</html>
+
 
 
 
