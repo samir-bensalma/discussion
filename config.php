@@ -1,10 +1,10 @@
 <?php
 
-try{
-    $db = new PDO("mysql:host=localhost;dbname=discussion","root","");
-}
-catch(exception $e){
-    die('Erreur'. $e->getMessage());
-}
+    $servername = "localhost";
+    $dbuser = "root";
+    $dbpass = "";
+    $dbname = "discussion";
+    $conn = new PDO("mysql:host=$servername; dbname=$dbname", $dbuser, $dbpass);
+    
 
 ?>

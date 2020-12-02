@@ -1,10 +1,66 @@
+<?php
+    session_start();
+    require_once("config.php");
+    require_once("function.php");
 
-Aller chercher commmentaires date et login dans les bases de données
-    Faire correspondre l'id utlisateur du tableau commentaire avec $_SESSION['id']
-        Faire une boucle pour afficher les messages, date et login
+?>
 
-Si variable de session existe
-    Vérifie que le commentaire n'est pas vide
-        Si ok, envoyer vers la base de données (avec date et id_utilisateur)
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <title>Discussion | CHATIME</title>
+</head>
 
+<body>
+    <main>
+        <section class="cadreChat">
+
+            <div class="info">
+                <div>
+                    <h1><u>CHATIME</u></h1>
+                    <p>
+                        <?php 
+                            echo "Bienvenue <b><span style=\"text-transform: uppercase;\">" .$_SESSION['login']."</span></b> sur la discussion";
+                        ?>
+                    </p>
+                </div>
+
+                <div>
+                    <a href="index.php">Page d'ccueil</a>
+                    <br>
+                    <br>
+                    <a href="profil.php">Modifier mon profil</a>
+                </div>
+                
+                <div>
+                    <form action="" method="post">
+                        <input type="submit" name="logout" value="Déconnexion">
+                    </form>
+                </div>
+            </div>
+
+            <div>
+                <div class="chat">
+                    <div>
+                        <!-- a mettre sur la function -->
+                        <?php  
+                        discution($_POST["send"], trim($_POST["chat"]), $_POST["logout"]);
+                        ?>
+                    </div>
+                </div>
+
+                <form action="" method="post" class="message">
+                    <textarea name="chat" id="chat" cols="30" rows="10" placeholder="écrivez un message"></textarea>
+                    <input type="submit" name="send" value="ENVOYER">
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

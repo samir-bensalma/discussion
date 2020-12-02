@@ -1,23 +1,62 @@
-
 <?php
 
-session_start();
-require_once('config.php');
-require_once('function.php');
+    require_once("config.php");
+    require_once("function.php");
+
 ?>
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <title>Inscription | CHATIME</title>
+</head>
 
-<html>
-<form action="" method="POST" id=form_inscription>
-    <div><label for="login">Login</label> <input type="text" name="login" placeholder="Entrez votre login" size="20" id="login"></div>
-    <div><label for="password">Mot de passe </label> <input type="password" name="password" placeholder="Entrez votre mot de passe" id="pass"> </div>
-    <div><label for="password">Confirmez le mot de passe </label><input type="password" name="cpassword" placeholder="Entrez votre mot de passe" id="pass"></div>
-    <div><input type="submit" name="submit" value="envoyer" id="submit"></div>
-</form>
+<body>
+    <main>
+        <section class="cadreInscriptoin">
 
-<?php
-if (isset($_POST['submit'])) {
-register($_POST['login'], $_POST['password'], $_POST['cpassword']);
-}
-?>
+            <div class="exite">
+                <h1><a href="index.php">X</a></h1>
+            </div>
+
+            <div class="logo">
+                <h1>CHATIME</h1>
+                <p>INSCRIPTION</p>
+            </div>
+            
+            <form action="" method="post" class="formInscription">
+                <span class="msg_erreur">
+                    <?php
+                    inscription(trim($_POST["user"]), trim($_POST["password"]), trim($_POST["cpassword"]));
+                ?>
+                </span>
+                <div>
+                    <label for="user"></label>
+                    <input type="text" name="user" id="user" placeholder="Username">
+                </div>
+
+                <div>
+                    <label for="password"></label>
+                    <input type="password" name="password" id="password" placeholder="Mot de passe">
+                </div>
+                <div>
+                    <label for="cpassword"></label>
+                    <input type="password" name="cpassword" id="cpassword" placeholder="Confirmer le mot de passe">
+                </div>
+                <div>
+                    <input type="submit" name="submit" value="Valider">
+                </div>
+            </form>
+            <div class="connexion">
+                <a href="connexion.php">Déjà un membre ?</a>
+                <a href="index.php">Revenir a la page d'accueil</a>
+            </div>
+        </section>
+    </main>
+</body>
+
 </html>

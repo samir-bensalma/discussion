@@ -1,38 +1,38 @@
 <?php
 
-try{
-    $db = new PDO("mysql:host=localhost;dbname=discussion","root","");
-}
-catch(exception $e){
-    die('Erreur'. $e->getMessage());
-}
 
-function register($login, $password, $cpassword)
-{       $db = new PDO("mysql:host=localhost;dbname=discussion","root","");
+// DEBUT FUNCTION POUR LA PAGE INSCRIPTION 
+function inscription($user, $password, $cpassword){
+    session_start();
+    if (isset($_SESSION['login'])) {
+        header("Location: discussion.php");
+    }
+    include("config.php");
     if (isset($_POST["submit"])) {
         $msg = array();
         // Pour verifier si le username existe deja dans la base de donnée
-        $existe = $db->prepare("SELECT login FROM utilisateurs WHERE login = '$login'");
-        $existe->execute();
-        $existe = $db->prepare("SELECT FOUND_ROWS()");
-        $existe->execute();
-        $row_count = $existe->fetchColumn();
+        $existe = $conn->prepare("SELECT login FROM utilisateurs WHERE login = :user"); 
+        $existe->execute(['user' => $user]);
+        // $existe = $existe -> fetch(PDO::FETCH_ASSOC);
+        $existe = $existe->fetchObject();
+        $existe = $existe->login;
         // verifier si l'utilisateur a rempli tous les champs
-        if (!empty($login) && !empty($password) && !empty($cpassword)) {
-        } else array_push($msg, "Merci de remplir tous les champs<br>");
+        if (!empty($user) && !empty($password) && !empty($cpassword)) {
+        }else array_push($msg, "Merci de remplir tous les champs<br>");
         // si le user est deja utiliser affichage d'un message d'erreur
-        if ($row_count == 0) {
-        } else array_push($msg, "Le user que vous avez utiliser existe deja<br>");
+        if ($existe !== $user) {
+        }else array_push($msg, "Le user que vous avez utiliser existe deja<br>");
         // si les mot de passe sont identique passer a l'etape suivante
         if ($password == $cpassword) {
-        } else array_push($msg, "Les mots de passe ne sont pas identiques<br>");
+        }else array_push($msg, "Les mots de passe ne sont pas identique<br>");
         // si zéro ereur donc envoyer les informations dans la base de donnée
         $count = count($msg);
         if ($count == 0) {
             $crypt_pass = password_hash($password, PASSWORD_BCRYPT);
-            $insert = $db->prepare("INSERT INTO utilisateurs (login, password) VALUES (?, ?)");
-            $insert->execute([$login, $crypt_pass]);
-            array_push($msg, "vous avez bien ete enregistrer<br>");
+            $insert = $conn -> prepare("INSERT INTO utilisateurs (login, password) VALUES (?, ?)");
+            $insert -> execute([$user, $crypt_pass]);
+            $_SESSION["login"] = $user;
+            header("Location: discussion.php");
         }
         // pour afficher les message
         foreach ($msg as $msg_show) {
@@ -40,55 +40,199 @@ function register($login, $password, $cpassword)
         }
     }
 }
-function connexion($login,$password) {
+// FIN FUNCTION POUR LA PAGE INSCRIPTION 
 
-    if(isset($login) AND isset($password)){
-        $db = new PDO("mysql:host=localhost;dbname=discussion","root","");
-        $sth = $db -> prepare("SELECT id FROM utilisateurs WHERE login ='$login'");
-        $sth-> setFetchMode(PDO::FETCH_ASSOC);
-        $sth -> execute();
-        $row = $sth -> fetch();
-        $_SESSION['id'] = $row['id'];
-        $count = $sth -> rowCount();
-            if ($count > 0){
-                $sth = $db -> prepare("SELECT password FROM utilisateurs WHERE login ='$login'");
-                $sth-> setFetchMode(PDO::FETCH_ASSOC);
-                $sth -> execute();
-                $row = $sth -> fetch();
 
-                if(password_verify($password,$row['password'])) {
-                    $_SESSION['login'] = $login;
-                    echo "Bienvenue" . " " . $_SESSION['login'] . " " . "vous êtes connecté" . "<br>";
-                    echo "Vous allez être automatiquement redirigé vers l'accueil";
-                    header('refresh:3;url=index.php');
-                } else echo "Mot de passe incorrect";
-    } else echo "Login inconnu";
-} else echo "Merci de compléter le login et le mot de passe";
+// DEBUT FUNCTION POUR LA PAGE CONNEXION 
+function connexion($user, $password){
+    session_start();
+    if (isset($_SESSION['login'])) {
+        header("Location: discussion.php");
+    }
+    include("config.php");
+
+    if (isset($_POST["submit"])) {
+        // crée un tableau pour stocker les messages d'erreur
+        $msg = array(); 
+        // decrypter le mot de passe
+        $info = $conn -> prepare(" SELECT login, password FROM utilisateurs WHERE login = :user ");
+        $info -> execute(['user' => $user]);
+        $info = $info -> fetchObject();
+        $crypted = $info->password; // mot de passe crypté
+        $login = $info->login;
+        // si le mdp crypter est == le mdp entrer cela est = 1 sinon = 0
+        $decrypted = password_verify($password, $crypted);
+        // verifeir si tous les champs son remplis
+        if (!empty($user) && !empty($password)) {
+            // si le user et le mot de passe entrer sont correct creation d'une session
+            if ($login === $user && $decrypted == true) {
+                $_SESSION['login'] = $user;
+                header("Location: discussion.php");
+            }else array_push($msg, "le username ou le mot de passe n'est pas correct ");
+        }else array_push($msg, "Merci de remplir tous les champs");
+        // pour afficher les message d'erreurs
+        foreach ($msg as $msg_erreur) {
+            echo $msg_erreur;
+        }
+    }
 }
+// FIN FUNCTION POUR LA PAGE CONNEXION 
 
-function profil($login, $password, $cpassword)
-{
-    $hash_password = "";
-    if (!empty(trim($password)) and !empty(trim($cpassword)) and !empty(trim($login))) {
 
-        $db = new PDO("mysql:host=localhost;dbname=discussion", "root", "");
-        $sth = $db->prepare("SELECT * FROM utilisateurs WHERE login = ?");
-        $sth->bindValue(1, $login);
-        $sth->setFetchMode(PDO::FETCH_ASSOC);
-        $sth->execute();
-        $count = $sth->rowCount();
-        var_dump($count);
-        if (!$count || $_SESSION['login'] == $login) {
+
+// DEBUT FUNCTION POUR LA PAGE PROFIL USERNAME 
+function prfofilChangUser($user, $password){
+    session_start();
+    $session = $_SESSION['login'];
+    include("config.php");
+    
+    if (isset($_POST["submitNewUser"])) {
+        // crée un tableau pour stocker les messages d'erreur
+        $msg = array(); 
+        // decrypter le mot de passe
+        $info = $conn -> prepare(" SELECT * FROM utilisateurs WHERE login = :session ");
+        $info -> execute(['session' => $session]);
+        $info = $info -> fetchObject();
+        $crypted = $info->password; // mot de passe crypté
+        // si le mdp crypter est == le mdp entrer cela est = 1 sinon = 0
+        $decrypted = password_verify($password, $crypted);
+        // verifeir si tous les champs son remplis
+        if (!empty($user)) {
+        }else array_push($msg, "merci de saisir un username<br>");
+        // si le user entrer est different que celui utiliser
+        if ($user !== $session) {
+            // si le user entrer n'existe pas
+            $infou = $conn -> prepare(" SELECT * FROM utilisateurs WHERE login = '$user' ");
+            $infou -> execute();
+            $infou= $infou -> fetchObject();
+            $login = $infou->login;
+
+            if ($login !== $user) {
+            }else array_push($msg, "le username existe déjà :(<br>");
+        }else array_push($msg, "vous devez utiliser un autre username que $session<br>");
+        
+
+        if (!empty($password)) {
+            if ($decrypted == true) {
+            }else array_push($msg, "Le mot de passe n'est pas correct<br>");
+        }else array_push($msg, "merci de saisir votre mot de passe<br>");
+
+        $count = count($msg);
+        if ($count == 0) {
+            $update = $conn -> prepare("UPDATE utilisateurs SET login = :login WHERE login = :session ");
+            $update -> bindParam("login", $user);
+            $update -> bindParam("session", $session);
+            $update -> execute();
+            $_SESSION['login'] = $user;
+            array_push($msg, "vous avez bien modifié votre username à $user<br>");
+        }
+        // pour afficher les message
+        foreach ($msg as $msg_show) {
+            echo $msg_show;
+        }
+    }
+}
+// FIN FUNCTION POUR LA PAGE PROFIL USERNAME 
+
+
+// DEBUT FUNCTION POUR LA PAGE PROFIL PASSWORD 
+function prfofilChangPass($oldPass, $password, $cpassword){
+    session_start();
+    $session = $_SESSION['login'];
+    include("config.php");
+    if (isset($_POST["submitNewPass"])) {
+        $msg = array();
+        // decrypter le mot de passe
+        $info = $conn -> prepare(" SELECT * FROM utilisateurs WHERE login = :session ");
+        $info -> execute(['session' => $session]);
+        $info = $info -> fetchObject();
+        $crypted = $info->password; // mot de passe crypté
+        // si le mdp crypter est == le mdp entrer cela est = 1 sinon = 0
+        $decrypted = password_verify($oldPass, $crypted);
+        // verifier si l'utilisateur a rempli tous les champs
+        if (!empty($oldPass)) {
+            if ($decrypted == true) {
+            }else array_push($msg, "Le mot de passe saisi n'est pas correce<br>");
+        }else array_push($msg, "Merci de saisir l'ancien mot de passe<br>");
+        // verifier si l'utilisateur a rempli tous les champs
+        if (!empty($password)) {
+            if ($password != $oldPass) {
+            }else array_push($msg, "vous devez utilisez un autre mot de passe !<br>");
+        }else array_push($msg, "Merci de saisir le nouveau mot de passe<br>");
+        // verifier si l'utilisateur a rempli tous les champs
+        if (!empty($cpassword)) {
             if ($password == $cpassword) {
-                $hash_password = password_hash($password, PASSWORD_BCRYPT);
-                $sth = $db->prepare("UPDATE utilisateurs SET login='$login', password='$hash_password' WHERE id = ?");
-                $sth->bindValue(1, $_SESSION['id']);
-                $sth->execute();
-                $_SESSION['login'] = $login;
-                echo "Votre profil a été mis à jour";
-                header('refresh:3;url=index.php');
-            } else echo "Les mots de passe ne sont pas identiques";
-        } else echo "Le login existe déjà";
-    } else echo "Merci de remplir l'ensemble des champs";
+            }else array_push($msg, "La confirmation du mot de passe n'est pas correct<br>");
+        }else array_push($msg, "Merci de confirmer le mot de passe<br>");
+        // si zéro ereur donc envoyer les informations dans la base de donnée
+        $count = count($msg);
+        if ($count == 0) {
+            $crypt_pass = password_hash($password, PASSWORD_BCRYPT);
+            $update = $conn -> prepare("UPDATE utilisateurs SET password = :password WHERE login = :session ");
+            $update -> bindParam("password", $crypt_pass);
+            $update -> bindParam("session", $session);
+            $update -> execute();
+            array_push($msg, "vous avez bien modifier le mot de passe<br>");
+        }
+        // pour afficher les message
+        foreach ($msg as $msg_show) {
+            echo $msg_show;
+        }
+    }
 }
+// FIN FUNCTION POUR LA PAGE PROFIL PASSWORD 
+
+
+// DEBUT FUNCTION POUR LA PAGE DISCUSSION
+function discution($send, $chat, $logout){
+    session_start();
+    $session = $_SESSION['login'];
+    include("config.php");
+
+    if (!isset($_SESSION['login'])) {
+        header("Location: connexion.php");
+    }
+
+    $messages = $conn -> prepare(" SELECT * FROM  messages INNER JOIN utilisateurs ON id_utilisateur = utilisateurs.id ");
+    $messages -> execute();
+    foreach ($messages as $key) {
+        if ($session == $key["login"]) {
+            $class = "mybulbe";
+        }else $class = "bulbe";
+        echo "
+            <div class=\"$class\">
+                <h3>" . $key["login"] . " :</h3>
+                <p>" . $key["message"] . "</p>
+                <h6>" . $key["date"] . "</h6>
+            </div>
+        ";
+    }
+    //////////////////////////////////////////////////
+    if (isset($send)) {
+        if (!empty($chat)) {
+            $id_utilisateur = $conn -> prepare(" SELECT * FROM  utilisateurs WHERE login = :session");
+            $id_utilisateur -> bindParam('session', $session);
+            $id_utilisateur -> execute();
+            $id_utilisateur = $id_utilisateur -> fetchObject();
+            $id_utilisateur = $id_utilisateur -> id;
+
+            $date = date("Y-m-d H:i:s"); 
+            $sendMessage = $conn -> prepare("INSERT INTO messages (message, id_utilisateur, date) VALUES (:message, :id_utilisateur, :date) ");
+            $sendMessage -> bindParam('message', $chat);
+            $sendMessage -> bindParam('date', $date);
+            $sendMessage -> bindParam('id_utilisateur', $id_utilisateur);
+            $sendMessage -> execute();
+            header('refresh:0');
+        }
+    }
+
+    //////////////////////////////////////////////////
+    if (isset($logout)) {
+        session_unset();
+        header("Location: connexion.php");
+    }
+}
+
+
+
 ?>
