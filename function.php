@@ -14,8 +14,8 @@ function inscription($user, $password, $cpassword){
         $existe = $conn->prepare("SELECT login FROM utilisateurs WHERE login = :user"); 
         $existe->execute(['user' => $user]);
         // $existe = $existe -> fetch(PDO::FETCH_ASSOC);
-        $existe = $existe->fetchObject();
-        $existe = $existe->login;
+        $existe = $existe->fetch(PDO::FETCH_ASSOC);;
+        $existe = $existe['login'];
         // verifier si l'utilisateur a rempli tous les champs
         if (!empty($user) && !empty($password) && !empty($cpassword)) {
         }else array_push($msg, "Merci de remplir tous les champs<br>");
@@ -42,47 +42,45 @@ function inscription($user, $password, $cpassword){
 }
 // FIN FUNCTION POUR LA PAGE INSCRIPTION 
 
+    //////////////////////////////////////////////////
 
 // DEBUT FUNCTION POUR LA PAGE CONNEXION 
-function connexion($user, $password){
-    session_start();
+function connexion($user, $password)
+{
     if (isset($_SESSION['login'])) {
         header("Location: discussion.php");
     }
     include("config.php");
 
-    if (isset($_POST["submit"])) {
         // crée un tableau pour stocker les messages d'erreur
-        $msg = array(); 
+        $msg = array();
         // decrypter le mot de passe
-        $info = $conn -> prepare(" SELECT login, password FROM utilisateurs WHERE login = :user ");
-        $info -> execute(['user' => $user]);
-        $info = $info -> fetchObject();
-        $crypted = $info->password; // mot de passe crypté
-        $login = $info->login;
+        $info = $conn->prepare(" SELECT login, password FROM utilisateurs WHERE login = :user ");
+        $info->execute(['user' => $user]);
+        $info = $info -> fetch(PDO::FETCH_ASSOC);
+        $crypted=$info['password'];
+        $login=$info['login'];
         // si le mdp crypter est == le mdp entrer cela est = 1 sinon = 0
         $decrypted = password_verify($password, $crypted);
         // verifeir si tous les champs son remplis
-        if (!empty($user) && !empty($password)) {
+        if (!empty(trim($user)) && !empty(trim($password))) {
             // si le user et le mot de passe entrer sont correct creation d'une session
             if ($login === $user && $decrypted == true) {
                 $_SESSION['login'] = $user;
                 header("Location: discussion.php");
-            }else array_push($msg, "le username ou le mot de passe n'est pas correct ");
-        }else array_push($msg, "Merci de remplir tous les champs");
+            } else array_push($msg, "le username ou le mot de passe n'est pas correct ");
+        } else array_push($msg, "Merci de remplir tous les champs");
         // pour afficher les message d'erreurs
         foreach ($msg as $msg_erreur) {
             echo $msg_erreur;
         }
-    }
 }
 // FIN FUNCTION POUR LA PAGE CONNEXION 
 
-
+    //////////////////////////////////////////////////
 
 // DEBUT FUNCTION POUR LA PAGE PROFIL USERNAME 
 function prfofilChangUser($user, $password){
-    session_start();
     $session = $_SESSION['login'];
     include("config.php");
     
@@ -92,8 +90,8 @@ function prfofilChangUser($user, $password){
         // decrypter le mot de passe
         $info = $conn -> prepare(" SELECT * FROM utilisateurs WHERE login = :session ");
         $info -> execute(['session' => $session]);
-        $info = $info -> fetchObject();
-        $crypted = $info->password; // mot de passe crypté
+        $info = $info -> fetch(PDO::FETCH_ASSOC);
+        $crypted = $info['password']; // mot de passe crypté
         // si le mdp crypter est == le mdp entrer cela est = 1 sinon = 0
         $decrypted = password_verify($password, $crypted);
         // verifeir si tous les champs son remplis
@@ -104,8 +102,8 @@ function prfofilChangUser($user, $password){
             // si le user entrer n'existe pas
             $infou = $conn -> prepare(" SELECT * FROM utilisateurs WHERE login = '$user' ");
             $infou -> execute();
-            $infou= $infou -> fetchObject();
-            $login = $infou->login;
+            $infou= $infou -> fetch(PDO::FETCH_ASSOC);
+            $login = $infou['login'];
 
             if ($login !== $user) {
             }else array_push($msg, "le username existe déjà :(<br>");
@@ -134,10 +132,10 @@ function prfofilChangUser($user, $password){
 }
 // FIN FUNCTION POUR LA PAGE PROFIL USERNAME 
 
+    //////////////////////////////////////////////////
 
 // DEBUT FUNCTION POUR LA PAGE PROFIL PASSWORD 
 function prfofilChangPass($oldPass, $password, $cpassword){
-    session_start();
     $session = $_SESSION['login'];
     include("config.php");
     if (isset($_POST["submitNewPass"])) {
@@ -145,8 +143,8 @@ function prfofilChangPass($oldPass, $password, $cpassword){
         // decrypter le mot de passe
         $info = $conn -> prepare(" SELECT * FROM utilisateurs WHERE login = :session ");
         $info -> execute(['session' => $session]);
-        $info = $info -> fetchObject();
-        $crypted = $info->password; // mot de passe crypté
+        $info = $info -> fetch(PDO::FETCH_ASSOC);
+        $crypted = $info['password']; // mot de passe crypté
         // si le mdp crypter est == le mdp entrer cela est = 1 sinon = 0
         $decrypted = password_verify($oldPass, $crypted);
         // verifier si l'utilisateur a rempli tous les champs
@@ -182,39 +180,45 @@ function prfofilChangPass($oldPass, $password, $cpassword){
 }
 // FIN FUNCTION POUR LA PAGE PROFIL PASSWORD 
 
+    //////////////////////////////////////////////////
 
 // DEBUT FUNCTION POUR LA PAGE DISCUSSION
-function discution($send, $chat, $logout){
-    session_start();
-    $session = $_SESSION['login'];
-    include("config.php");
+function discussion($text, $submit)
+{
+    $db = new PDO("mysql:host=localhost;dbname=discussion", "root", "");
+    $date = date('Y-m-d H:i:s');
+    $login = $_SESSION['login'];
+    $sth = $db->prepare("SELECT id FROM utilisateurs WHERE login ='$login'");
+    $sth->setFetchMode(PDO::FETCH_ASSOC);
+    $sth->execute();
+    $row = $sth->fetch();
+    $id_utilisateur = $row['id'];
+    var_dump($row['id']);
 
-    if (!isset($_SESSION['login'])) {
-        header("Location: connexion.php");
-    }
+        if (isset($submit)) {
+            if (!empty(trim($text))) {
 
-    $messages = $conn -> prepare(" SELECT * FROM  messages INNER JOIN utilisateurs ON id_utilisateur = utilisateurs.id ");
-    $messages -> execute();
-    foreach ($messages as $key) {
-        if ($session == $key["login"]) {
-            $class = "mybulbe";
-        }else $class = "bulbe";
-        echo "
-            <div class=\"$class\">
-                <h3>" . $key["login"] . " :</h3>
-                <p>" . $key["message"] . "</p>
-                <h6>" . $key["date"] . "</h6>
-            </div>
-        ";
-    }
+                $query = $db->prepare("INSERT INTO messages (message,id_utilisateur,date) values (:message,:id_utilisateur,:date)");
+                $query->bindParam(':message', $text);
+                $query->bindParam(':id_utilisateur', $id_utilisateur);
+                $query->bindParam(':date', $date);
+                $query->execute();
+                header('location:discussion.php');
+
+            }else echo "merci de compléter le champ";
+        }else echo "Compléter votre message et appuyer sur valider";
+}
     //////////////////////////////////////////////////
+
+   function envoyer($send,$chat){
     if (isset($send)) {
         if (!empty($chat)) {
+            include("config.php");
             $id_utilisateur = $conn -> prepare(" SELECT * FROM  utilisateurs WHERE login = :session");
             $id_utilisateur -> bindParam('session', $session);
             $id_utilisateur -> execute();
-            $id_utilisateur = $id_utilisateur -> fetchObject();
-            $id_utilisateur = $id_utilisateur -> id;
+            $id_utilisateur = $id_utilisateur -> fetch(PDO::FETCH_ASSOC);
+            $id_utilisateur = $id_utilisateur['id'];
 
             $date = date("Y-m-d H:i:s"); 
             $sendMessage = $conn -> prepare("INSERT INTO messages (message, id_utilisateur, date) VALUES (:message, :id_utilisateur, :date) ");
@@ -223,16 +227,31 @@ function discution($send, $chat, $logout){
             $sendMessage -> bindParam('id_utilisateur', $id_utilisateur);
             $sendMessage -> execute();
             header('refresh:0');
-        }
-    }
-
-    //////////////////////////////////////////////////
-    if (isset($logout)) {
-        session_unset();
-        header("Location: connexion.php");
+        } echo "pb";
     }
 }
+    //////////////////////////////////////////////////
 
+function logout()
+{
+    session_unset();
+    header('Location: connexion.php');
+}
 
+    //////////////////////////////////////////////////
+
+function afficher()
+{
+    if ($_SESSION['login']) {
+        include("config.php");
+        $requete = $conn->prepare("SELECT message, login, date FROM messages JOIN utilisateurs ON messages.id_utilisateur  = utilisateurs.id ORDER BY date DESC ");
+        $requete->execute();
+        foreach ($requete as $message) {
+            echo $message['message'] . "<br>";
+            echo $message['date'] . "<br>";
+            echo $message['login'] . "<br>";
+        }
+    }
+}
 
 ?>

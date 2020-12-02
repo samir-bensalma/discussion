@@ -48,8 +48,15 @@
                 <div class="chat">
                     <div>
                         <!-- a mettre sur la function -->
-                        <?php  
-                        discution($_POST["send"], trim($_POST["chat"]), $_POST["logout"]);
+                        <?php
+                        afficher();
+
+                        if (isset($_POST['send'])) {
+                            discussion($_POST['chat'], $_POST['send']);
+                        }
+                        if (isset($_POST['logout'])){
+                            logout();
+                        }
                         ?>
                     </div>
                 </div>

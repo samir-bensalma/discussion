@@ -32,7 +32,11 @@
             <form action="" method="post" class="formInscription">
                 <span class="msg_erreur">
                     <?php
-                    connexion($_POST["user"], $_POST["password"]);
+                    $submit="";
+                    if (isset($_POST['submit'])) {
+                        $submit = $_POST['submit'];
+                        connexion($_POST["user"], $_POST["password"]);
+                    }
                 ?>
                 </span>
                 <div>

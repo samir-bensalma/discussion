@@ -31,8 +31,10 @@
             <form action="" method="post" class="formInscription">
                 <span class="msg_erreur">
                     <?php
-                    inscription(trim($_POST["user"]), trim($_POST["password"]), trim($_POST["cpassword"]));
-                ?>
+                    if (isset($_POST['submit'])) {
+                        inscription(trim($_POST["user"]), trim($_POST["password"]), trim($_POST["cpassword"]));
+                    }
+                    ?>
                 </span>
                 <div>
                     <label for="user"></label>

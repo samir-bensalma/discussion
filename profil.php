@@ -36,7 +36,9 @@
             <form action="" method="post" class="formInscription">
                 <span class="msg_erreur">
                     <?php
+                    if (isset($_POST['submitNewUser'])){
                     prfofilChangUser($_POST["newUser"], $_POST["password"]);
+                    }
                 ?>
                 </span>
                 <div>
@@ -63,7 +65,9 @@
             <form action="" method="post" class="formInscription">
                 <span class="msg_erreur">
                     <?php
-                    prfofilChangPass($_POST["oldPass"], $_POST["newPass"], $_POST["cNewPass"]);
+                    if (isset($_POST['newPass'])) {
+                        prfofilChangPass($_POST["oldPass"], $_POST["newPass"], $_POST["cNewPass"]);
+                    }
                 ?>
                 </span>
                 <div>
