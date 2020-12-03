@@ -202,33 +202,10 @@ function discussion($text, $submit)
                 $query->bindParam(':id_utilisateur', $id_utilisateur);
                 $query->bindParam(':date', $date);
                 $query->execute();
-                header('location:discussion.php');
-
             }
         }
 }
-    //////////////////////////////////////////////////
 
-   function envoyer($send,$chat){
-    if (isset($send)) {
-        if (!empty($chat)) {
-            include("config.php");
-            $id_utilisateur = $conn -> prepare(" SELECT * FROM  utilisateurs WHERE login = :session");
-            $id_utilisateur -> bindParam('session', $session);
-            $id_utilisateur -> execute();
-            $id_utilisateur = $id_utilisateur -> fetch(PDO::FETCH_ASSOC);
-            $id_utilisateur = $id_utilisateur['id'];
-
-            $date = date("Y-m-d H:i:s"); 
-            $sendMessage = $conn -> prepare("INSERT INTO messages (message, id_utilisateur, date) VALUES (:message, :id_utilisateur, :date) ");
-            $sendMessage -> bindParam('message', $chat);
-            $sendMessage -> bindParam('date', $date);
-            $sendMessage -> bindParam('id_utilisateur', $id_utilisateur);
-            $sendMessage -> execute();
-            header('refresh:0');
-        } echo "pb";
-    }
-}
     //////////////////////////////////////////////////
 
 function logout()
@@ -245,9 +222,6 @@ function afficher()
         include("config.php");
         $messages = $conn->prepare("SELECT message, login, date FROM messages JOIN utilisateurs ON messages.id_utilisateur  = utilisateurs.id ORDER BY date DESC ");
         $messages->execute();
-        
-        
-
         foreach ($messages as $key) {
             if ($_SESSION['login'] == $key["login"]) {
                 $class = "mybulbe";

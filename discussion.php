@@ -2,7 +2,9 @@
     session_start();
     require_once("config.php");
     require_once("function.php");
-
+    if (isset($_POST['send'])){
+        header('refresh:0');
+    }
 ?>
 
 <!DOCTYPE html>
@@ -31,7 +33,7 @@
                 </div>
 
                 <div>
-                    <a href="index.php">Page d'ccueil</a>
+                    <a href="index.php">Page d'accueil</a>
                     <br>
                     <br>
                     <a href="profil.php">Modifier mon profil</a>
@@ -50,7 +52,6 @@
                         <!-- a mettre sur la function -->
                         <?php
                         afficher();
-
                         if (isset($_POST['send'])) {
                             discussion($_POST['chat'], $_POST['send']);
                         }
