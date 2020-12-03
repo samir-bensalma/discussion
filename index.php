@@ -7,7 +7,7 @@
         $conecter = '<div><a href="discussion.php">Discussion</a></div>
                         <div><a href="profil.php">Mon profil</a></div>';
         
-    }else $conecter = '<div><a href="inscrirption.php">inscrirption</a></div>
+    }else $conecter = '<div><a href="inscription.php">inscrirption</a></div>
                         <div><a href="connexion.php">Connexion</a></div>';
     
     if (isset($_SESSION['login'])) {

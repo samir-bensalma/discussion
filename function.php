@@ -193,7 +193,6 @@ function discussion($text, $submit)
     $sth->execute();
     $row = $sth->fetch();
     $id_utilisateur = $row['id'];
-    var_dump($row['id']);
 
         if (isset($submit)) {
             if (!empty(trim($text))) {
@@ -205,8 +204,8 @@ function discussion($text, $submit)
                 $query->execute();
                 header('location:discussion.php');
 
-            }else echo "merci de compléter le champ";
-        }else echo "Compléter votre message et appuyer sur valider";
+            }
+        }
 }
     //////////////////////////////////////////////////
 
@@ -244,12 +243,22 @@ function afficher()
 {
     if ($_SESSION['login']) {
         include("config.php");
-        $requete = $conn->prepare("SELECT message, login, date FROM messages JOIN utilisateurs ON messages.id_utilisateur  = utilisateurs.id ORDER BY date DESC ");
-        $requete->execute();
-        foreach ($requete as $message) {
-            echo $message['message'] . "<br>";
-            echo $message['date'] . "<br>";
-            echo $message['login'] . "<br>";
+        $messages = $conn->prepare("SELECT message, login, date FROM messages JOIN utilisateurs ON messages.id_utilisateur  = utilisateurs.id ORDER BY date DESC ");
+        $messages->execute();
+        
+        
+
+        foreach ($messages as $key) {
+            if ($_SESSION['login'] == $key["login"]) {
+                $class = "mybulbe";
+            }else $class = "bulbe";
+            echo "
+                <div class=\"$class\">
+                    <h3>" . $key["login"] . " :</h3>
+                    <p>" . $key["message"] . "</p>
+                    <h6>" . $key["date"] . "</h6>
+                </div>
+            ";
         }
     }
 }
